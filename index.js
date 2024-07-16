@@ -8,18 +8,24 @@ require('dotenv').config();
 const PORT = process.env.PORT || 5000;
 
 // middlewares
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
 // verifyToken
 const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization.split(' ')[1];
+  // const token = req.headers.authorization.split(' ')[1];
+  const token = req.cookies?.tomato_access_token;
   if(!token){
+    console.log('Not token')
     return res.status(401).send({ message: 'Unauthorized access.' })
   }
   jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
     if(err){
+      console.log('Get err')
       return res.status(401).send({ message: 'Unauthorized access.' });
     }
     req.decoded = decoded;
@@ -63,7 +69,11 @@ async function run() {
       const userInfo = req.body;
       const secret = process.env.TOKEN_SECRET;
       const token = jwt.sign(userInfo, secret, { expiresIn: '1h' });
-      res.send({ token });
+      res.cookie('tomato_access_token', token, {
+        httpOnly: true,
+        secure: false
+      });
+      res.send({ success: true });
     })
 
 
@@ -75,19 +85,19 @@ async function run() {
 
 
     // dishes
-    app.get('/dishes/:id', async(req, res) => {
+    app.get('/dishes/:id', verifyToken, async(req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await dishesCollection.findOne(query);
       res.send(result);
     })
 
-    app.get('/dishes', async(req, res) => {
+    app.get('/dishes', verifyToken, async(req, res) => {
       const result = await dishesCollection.find().toArray();
       res.send(result);
     })
 
-    app.put('/dishes/:id', async(req, res) => {
+    app.put('/dishes/:id', verifyToken, async(req, res) => {
       const id = req.params.id;
       const dish = req.body;
       const query = { _id: new ObjectId(id) };
@@ -106,14 +116,14 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/dishes', async(req, res) => {
+    app.post('/dishes', verifyToken, async(req, res) => {
       const dish = req.body;
       // console.log('Dish: ', dish);
       const result = await dishesCollection.insertOne(dish);
       res.send(result);
     })
 
-    app.delete('/dishes/:id', async(req, res) => {
+    app.delete('/dishes/:id', verifyToken, async(req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await dishesCollection.deleteOne(query);
