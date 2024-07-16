@@ -75,8 +75,34 @@ async function run() {
 
 
     // dishes
+    app.get('/dishes/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await dishesCollection.findOne(query);
+      res.send(result);
+    })
+
     app.get('/dishes', async(req, res) => {
       const result = await dishesCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.put('/dishes/:id', async(req, res) => {
+      const id = req.params.id;
+      const dish = req.body;
+      const query = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          name: dish.name,
+          price: dish.price,
+          category: dish.category,
+          description: dish.description,
+          ratings: dish.ratings,
+          image: dish.image
+        }
+      };
+      const result = await dishesCollection.updateOne(query, updatedDoc, options);
       res.send(result);
     })
 
