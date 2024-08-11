@@ -85,19 +85,19 @@ async function run() {
 
 
     // dishes
-    app.get('/dishes/:id', verifyToken, async(req, res) => {
+    app.get('/dishes/:id', async(req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await dishesCollection.findOne(query);
       res.send(result);
     })
 
-    app.get('/dishes', verifyToken, async(req, res) => {
+    app.get('/dishes', async(req, res) => {
       const result = await dishesCollection.find().toArray();
       res.send(result);
     })
 
-    app.put('/dishes/:id', verifyToken, async(req, res) => {
+    app.put('/dishes/:id', async(req, res) => {
       const id = req.params.id;
       const dish = req.body;
       const query = { _id: new ObjectId(id) };
@@ -116,14 +116,14 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/dishes', verifyToken, async(req, res) => {
+    app.post('/dishes', async(req, res) => {
       const dish = req.body;
       // console.log('Dish: ', dish);
       const result = await dishesCollection.insertOne(dish);
       res.send(result);
     })
 
-    app.delete('/dishes/:id', verifyToken, async(req, res) => {
+    app.delete('/dishes/:id', async(req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await dishesCollection.deleteOne(query);
@@ -175,6 +175,14 @@ async function run() {
       const result = await usersCollection.insertOne(user);
       res.send(result);
     })
+
+    
+
+    // logOut related api
+    // app.post('/logout', (req, res) => {
+    //   res.clearCookie('tomato_access_token');
+    //   res.status(200).send({ message: 'Logged out successfully' });
+    // });
 
     
     await client.db("admin").command({ ping: 1 });
