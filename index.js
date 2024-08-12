@@ -141,7 +141,8 @@ async function run() {
 
     app.post('/carts', async(req, res) => {
       const dish = req.body;
-      const query = { dishId: dish.dishId };
+      // console.log('Dish from server: ', dish)
+      const query = { dishId: dish.dishId , email: dish.email };
       const isExist = await cartCollection.findOne(query);
       if(isExist){
         return res.status(401).send({ message: 'Dish item already added.' });
